@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    name: Test and build mall-admin
+    name: Test, package and build image
     runs-on: ubuntu-latest
 
     services:
@@ -59,6 +59,13 @@ jobs:
       - name: 测试并打包 mall-admin
         working-directory: mall-master
         run: mvn -B -pl mall-admin -am clean verify -DskipTests=false -Ddocker.skip=true
+
+      - name: 构建 mall-admin Docker 镜像
+        working-directory: mall-master
+        run: docker build --tag mall-admin-ci:${{ github.sha }} --file document/sh/Dockerfile mall-admin/target
+
+      - name: 确认 Docker 镜像已生成
+        run: docker image inspect mall-admin-ci:${{ github.sha }}
 
       - name: 保存构建出的 Jar
         uses: actions/upload-artifact@v4
