@@ -1,0 +1,36 @@
+name: Maven CI
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build mall-admin
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 获取项目代码
+        uses: actions/checkout@v6
+
+      - name: 配置 Java 17 与 Maven 缓存
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: 编译并打包 mall-admin
+        working-directory: mall-master
+        run: mvn -B -pl mall-admin -am clean package -DskipTests -Ddocker.skip=true
+
+      - name: 保存构建出的 Jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: mall-admin-jar
+          path: mall-master/mall-admin/target/*.jar
+          if-no-files-found: error
