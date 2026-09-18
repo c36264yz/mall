@@ -10,8 +10,33 @@ permissions:
 
 jobs:
   build:
-    name: Build mall-admin
+    name: Test, package and build image
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: mall
+          TZ: Asia/Shanghai
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+
+      redis:
+        image: redis:5
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
 
     steps:
       - name: 获取项目代码
@@ -24,9 +49,23 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: 编译并打包 mall-admin
+      - name: 导入 mall 测试数据库
         working-directory: mall-master
-        run: mvn -B -pl mall-admin -am clean package -DskipTests -Ddocker.skip=true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client
+          mysql --protocol=TCP -h 127.0.0.1 -uroot -proot mall < document/sql/mall.sql
+
+      - name: 测试并打包 mall-admin
+        working-directory: mall-master
+        run: mvn -B -pl mall-admin -am clean verify -DskipTests=false -Ddocker.skip=true
+
+      - name: 构建 mall-admin Docker 镜像
+        working-directory: mall-master
+        run: docker build --tag mall-admin-ci:${{ github.sha }} --file document/sh/Dockerfile mall-admin/target
+
+      - name: 确认 Docker 镜像已生成
+        run: docker image inspect mall-admin-ci:${{ github.sha }}
 
       - name: 保存构建出的 Jar
         uses: actions/upload-artifact@v4
