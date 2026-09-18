@@ -33,7 +33,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <skipTests>true</skipTests>
-        <docker.host>http://192.168.3.101:2375</docker.host>
+        <docker.host>http://192.168.5.129:2375</docker.host>
         <docker.maven.plugin.version>0.45.1</docker.maven.plugin.version>
         <pagehelper-starter.version>2.1.1</pagehelper-starter.version>
         <pagehelper.version>6.1.1</pagehelper.version>
@@ -55,6 +55,7 @@
         <mall-security.version>1.0-SNAPSHOT</mall-security.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <bouncycastle.version>1.84</bouncycastle.version>
+        <docker.image.prefix>mall</docker.image.prefix>
     </properties>
 
     <dependencies>
@@ -235,11 +236,11 @@
                         <images>
                             <image>
                                 <!--定义镜像名称-->
-                                <name>mall/${project.name}:${project.version}</name>
+                                <name>${docker.image.prefix}/${project.name}:${project.version}</name>
                                 <!--定义镜像构建行为-->
                                 <build>
                                     <!--定义基础镜像-->
-                                    <from>openjdk:17</from>
+                                    <from>eclipse-temurin:17-jre</from>
                                     <args>
                                         <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
                                     </args>
@@ -251,7 +252,7 @@
                                         <descriptorRef>artifact</descriptorRef>
                                     </assembly>
                                     <!--定义容器启动命令-->
-                                    <entryPoint>["java", "-jar","-Dspring.profiles.active=prod","/${project.build.finalName}.jar"]</entryPoint>
+                                    <entryPoint>["java", "-Dspring.profiles.active=prod", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
                                     <!--定义维护者-->
                                     <maintainer>macrozheng</maintainer>
                                 </build>
