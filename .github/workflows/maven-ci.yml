@@ -92,3 +92,29 @@ jobs:
           name: mall-admin-jar
           path: mall-master/mall-admin/target/*.jar
           if-no-files-found: error
+
+  deploy:
+    name: Deploy mall-admin to VM
+    needs: build
+    runs-on: [self-hosted, Linux, X64, mall-vm]
+    permissions: {}
+
+    steps:
+      - name: 拉取新镜像并更新 mall-admin
+        working-directory: /opt/ghcr-lab
+        run: |
+          docker compose pull mall-admin
+          docker compose up -d --no-deps mall-admin
+
+      - name: 检查新服务是否可访问
+        run: |
+          for i in $(seq 1 12); do
+            if docker run --rm --network host curlimages/curl:8.12.1 \
+              -fsS http://127.0.0.1:18081/swagger-ui/index.html >/dev/null; then
+              echo "mall-admin health check passed"
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose -f /opt/ghcr-lab/compose.yaml logs --tail=100 mall-admin
+          exit 1
