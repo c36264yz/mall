@@ -108,7 +108,8 @@ jobs:
 
       - name: 检查新服务是否可访问
         run: |
-          for i in $(seq 1 12); do
+          for i in $(seq 1 36); do
+            echo "等待服务启动：第 $i/36 次检查"
             if docker run --rm --network host curlimages/curl:8.12.1 \
               -fsS http://127.0.0.1:18081/swagger-ui/index.html >/dev/null; then
               echo "mall-admin health check passed"
