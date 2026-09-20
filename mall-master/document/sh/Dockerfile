@@ -1,4 +1,4 @@
-# 该镜像需要依赖的基础镜像
+# 该镜像需要依赖的基础镜像名
 FROM eclipse-temurin:17-jre
 # 将当前目录下的jar包复制到docker容器的/目录下
 ADD mall-admin-1.0-SNAPSHOT.jar /mall-admin-1.0-SNAPSHOT.jar
