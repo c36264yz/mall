@@ -8,3 +8,4 @@ EXPOSE 8080
 ENTRYPOINT ["java", "-jar","/mall-admin-1.0-SNAPSHOT.jar"]
 # 指定维护者的名字
 LABEL maintainer="macro"
+#test
